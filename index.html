@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Excel Download with Borders</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px;
+    }
+
+    input {
+      width: 100%;
+      border: none;
+      padding: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Enter Data</h2>
+
+  <table id="dataTable">
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>City</th>
+    </tr>
+    <tr>
+      <td><input></td>
+      <td><input></td>
+      <td><input></td>
+    </tr>
+    <tr>
+      <td><input></td>
+      <td><input></td>
+      <td><input></td>
+    </tr>
+  </table>
+
+  <button onclick="downloadExcel()">Download Excel</button>
+  <script>
+    async function downloadExcel() {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Sheet1");
+
+      let table = document.getElementById("dataTable");
+      let totalColumns = table.rows[0].cells.length;
+
+      // Leave 1 row and 1 column empty
+      let headerRow = 2;
+      let tableStartRow = 3;
+      let startCol = 2; // Column B
+
+      // ===== HEADER =====
+      let headerCell = worksheet.getCell(headerRow, startCol);
+      headerCell.value = "Student Data Report";
+
+      worksheet.mergeCells(
+        headerRow,
+        startCol,
+        headerRow,
+        startCol + totalColumns - 1
+      );
+
+      headerCell.font = { size: 16, bold: true };
+      headerCell.alignment = { horizontal: "center", vertical: "middle" };
+      worksheet.getRow(headerRow).height = 25;
+
+      // ===== TABLE =====
+      for (let i = 0; i < table.rows.length; i++) {
+
+        for (let j = 0; j < totalColumns; j++) {
+
+          let value;
+          if (i === 0) {
+            value = table.rows[i].cells[j].innerText;
+          } else {
+            value = table.rows[i].cells[j].querySelector("input").value;
+          }
+
+          let cell = worksheet.getCell(tableStartRow + i, startCol + j);
+          cell.value = value;
+
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" }
+          };
+        }
+      }
+
+      // Auto column width
+      for (let i = 0; i < totalColumns; i++) {
+        worksheet.getColumn(startCol + i).width = 20;
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), "table_data.xlsx");
+    }
+  </script>
+
+</body>
+
+</html>
